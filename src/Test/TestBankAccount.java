@@ -2,25 +2,38 @@ package Test;
 
 import Exceptions.InsufficientFundsException;
 import Exceptions.NegativeAmountException;
+import Exceptions.noAccountsFoundException;
 import Modules.AccountModel;
 import Modules.BankAccount;
+import Modules.RegularUserBase;
+import Modules.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TestBankAccount {
+    String s = System.getProperty("user.dir") + "/src/Data/Login";
+    String d = System.getProperty("user.dir") + "/src/Data/Accounts";
     AccountModel acc;
     BankAccount ba;
+    RegularUserBase reg;
+    User user;
 
     @BeforeEach
-    public void runBefore() throws IOException {
-        Date d = new Date();
-        acc = new AccountModel(1,1, "Chequing",0,d.toString(),false);
+    public void runBefore() throws IOException, noAccountsFoundException {
         ba = new BankAccount();
+        reg = new RegularUserBase();
+        user = new User(1, "a", "b", "Regular");
+        Date d = new Date();
+        reg.createUser("a", "b");
+        ba.createAccount(user.getUserId(), "Chequing");
+        acc = new AccountModel(1,1, "Chequing",0,d.toString(),false);
     }
 
     @Test
@@ -37,6 +50,10 @@ public class TestBankAccount {
         }
         assertEquals(500, acc.amount);
         String s = System.getProperty("user.dir") + "/src/Data/Accounts";
+        PrintWriter pw = new PrintWriter(s);
+        pw.close();
+        PrintWriter pw1 = new PrintWriter(d);
+        pw1.close();
     }
 
     @Test
@@ -59,5 +76,22 @@ public class TestBankAccount {
         }
         ba.deposit(500, acc);
         assertEquals(500, acc.amount);
+        PrintWriter pw = new PrintWriter(s);
+        pw.close();
+        PrintWriter pw1 = new PrintWriter(d);
+        pw1.close();
+    }
+
+    @Test
+    void testFindAccount() throws noAccountsFoundException, FileNotFoundException {
+        try {
+            assertTrue(acc.equals(ba.findAccount(acc.accountId)));
+        } catch (noAccountsFoundException ne) {
+            fail ("Should not have caught this exception");
+        }
+        PrintWriter pw = new PrintWriter(s);
+        pw.close();
+        PrintWriter pw1 = new PrintWriter(d);
+        pw1.close();
     }
 }
