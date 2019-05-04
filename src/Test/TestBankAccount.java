@@ -49,7 +49,6 @@ public class TestBankAccount {
 
         }
         assertEquals(500, acc.amount);
-        String s = System.getProperty("user.dir") + "/src/Data/Accounts";
         PrintWriter pw = new PrintWriter(s);
         pw.close();
         PrintWriter pw1 = new PrintWriter(d);
@@ -89,6 +88,27 @@ public class TestBankAccount {
         } catch (noAccountsFoundException ne) {
             fail ("Should not have caught this exception");
         }
+        try {
+            assertFalse(acc.equals(ba.findAccount(acc.accountId + 5)));
+            fail ("Should have caught a noAccountsFoundException");
+        } catch(noAccountsFoundException ne) {
+
+        }
+        PrintWriter pw = new PrintWriter(s);
+        pw.close();
+        PrintWriter pw1 = new PrintWriter(d);
+        pw1.close();
+    }
+
+    @Test
+    void testAccountStrings() throws FileNotFoundException {
+        String a = ba.getStringFormatAccount(acc);
+        String comp = acc.accountId + "," + acc.userId + "," + acc.accountType
+                + "," + acc.amount + "," + acc.creationDate + "," + acc.delete;
+        assertEquals(a, comp);
+        String[] temp = comp.split(",");
+        AccountModel acc1 = new AccountModel();
+        assertTrue(acc.equals(ba.createAccountFromstringArray(temp,acc1)));
         PrintWriter pw = new PrintWriter(s);
         pw.close();
         PrintWriter pw1 = new PrintWriter(d);
