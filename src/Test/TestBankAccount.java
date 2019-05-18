@@ -38,9 +38,9 @@ public class TestBankAccount {
 
     @Test
     void testDeposit() throws IOException, NegativeAmountException {
-        assertEquals(0, acc.amount);
+        assertEquals(0, acc.getAmount());
         ba.deposit(500, acc);
-        assertEquals(500, acc.amount);
+        assertEquals(500, acc.getAmount());
         try {
             ba.deposit(-10, acc);
             fail("Should have caught an exception");
@@ -48,7 +48,7 @@ public class TestBankAccount {
         catch (NegativeAmountException ne) {
 
         }
-        assertEquals(500, acc.amount);
+        assertEquals(500, acc.getAmount());
         PrintWriter pw = new PrintWriter(s);
         pw.close();
         PrintWriter pw1 = new PrintWriter(d);
@@ -57,7 +57,7 @@ public class TestBankAccount {
 
     @Test
     void testWithdraw() throws IOException, NegativeAmountException {
-        assertEquals(0, acc.amount);
+        assertEquals(0, acc.getAmount());
         try {
             ba.withdraw(10, acc);
             fail("Should have caught an insufficient funds exception");
@@ -74,7 +74,7 @@ public class TestBankAccount {
 
         }
         ba.deposit(500, acc);
-        assertEquals(500, acc.amount);
+        assertEquals(500, acc.getAmount());
         PrintWriter pw = new PrintWriter(s);
         pw.close();
         PrintWriter pw1 = new PrintWriter(d);
@@ -84,12 +84,12 @@ public class TestBankAccount {
     @Test
     void testFindAccount() throws noAccountsFoundException, FileNotFoundException {
         try {
-            assertTrue(acc.equals(ba.findAccount(acc.accountId)));
+            assertTrue(acc.equals(ba.findAccount(acc.getAccountId())));
         } catch (noAccountsFoundException ne) {
             fail ("Should not have caught this exception");
         }
         try {
-            assertFalse(acc.equals(ba.findAccount(acc.accountId + 5)));
+            assertFalse(acc.equals(ba.findAccount(acc.getAccountId() + 5)));
             fail ("Should have caught a noAccountsFoundException");
         } catch(noAccountsFoundException ne) {
 
@@ -103,8 +103,8 @@ public class TestBankAccount {
     @Test
     void testAccountStrings() throws FileNotFoundException {
         String a = ba.getStringFormatAccount(acc);
-        String comp = acc.accountId + "," + acc.userId + "," + acc.accountType
-                + "," + acc.amount + "," + acc.creationDate + "," + acc.delete;
+        String comp = acc.getAccountId() + "," + acc.getUserId() + "," + acc.getAccountType()
+                + "," + acc.getAmount() + "," + acc.getCreationDate() + "," + acc.getDelete();
         assertEquals(a, comp);
         String[] temp = comp.split(",");
         AccountModel acc1 = new AccountModel();
