@@ -104,7 +104,7 @@ public class login extends JFrame {
                         }
                         for (AccountModel acc : trueAccountList) {
                             if (!(acc==null)) {
-                                JButton button = new JButton(String.valueOf(acc.accountId));
+                                JButton button = new JButton(String.valueOf(acc.getAccountId()));
                                 ArrayList<String> stringButtonList = new ArrayList<>();
                                 if (!(buttonList==null)) {
                                     for (JButton buttons : buttonList) {
@@ -125,13 +125,13 @@ public class login extends JFrame {
                                 }
                                 List<AccountModel> listAccountsNotSameUserId = new ArrayList<>();
                                 for (AccountModel account : listAccounts) {
-                                    if (!(account.userId==user.getUserId())) {
+                                    if (!(account.getUserId()==user.getUserId())) {
                                         listAccountsNotSameUserId.add(account);
                                     }
                                 }
                                 List<Integer> accountIdList = new ArrayList<>();
                                 for (AccountModel account1 : listAccountsNotSameUserId) {
-                                    accountIdList.add(account1.accountId);
+                                    accountIdList.add(account1.getAccountId());
                                 }
                                 Iterator<JButton> iterator = buttonList.iterator();
                                 while (iterator.hasNext()) {
@@ -227,7 +227,7 @@ public class login extends JFrame {
                 if (e.getSource() == balance) {
                     playSound("leaguebuttonclick.wav");
                     JOptionPane.showMessageDialog(null, "Your account balance " +
-                            "is " + String.valueOf(account.amount));
+                            "is " + String.valueOf(account.getAmount()));
                 } else if (e.getSource() == withdraw) {
                     playSound("leaguebuttonclick.wav");
                     createWithdrawWindow();
