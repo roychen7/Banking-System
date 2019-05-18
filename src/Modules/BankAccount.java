@@ -12,35 +12,29 @@ public class BankAccount {
     private AccountFile accountfile = new AccountFile();
     private String accountFileName = System.getProperty("user.dir") + "/src/Data/Accounts";
     private List<String> accountList = accountfile.readFromFile(accountFileName);
-    private AccountModel _accountModel;
     Date date = new Date();
-    Map TMap = new HashMap<>();
     private CommonBase commonbase = new CommonBase();
-
-    public BankAccount(AccountModel accountModel) throws IOException {
-        _accountModel = accountModel;
-    }
 
     public BankAccount() throws IOException {
     }
 
     //EFFECTS: returns account amount
     public int getAmount(AccountModel account) {
-        return account.amount;
+        return account.getAmount();
     }
 
     //MODIFIES: this
     //EFFECTS: deducts sum from amount
     public void withdrawSum(int sum, AccountModel account) throws IOException {
-        account.amount = account.amount - sum;
-        updateAccount(account.accountId, getStringFormatAccount(account));
+        account.setAmount(account.getAmount() - sum);
+        updateAccount(account.getAccountId(), getStringFormatAccount(account));
     }
 
     //MODIFIES: this
     //EFFECTS: adds sum to amount
     public void depositSum(int sum, AccountModel account) throws IOException {
-        account.amount = account.amount + sum;
-        updateAccount(account.accountId, getStringFormatAccount(account));
+        account.setAmount(account.getAmount() + sum);
+        updateAccount(account.getAccountId(), getStringFormatAccount(account));
     }
 
     //MODIFIES: this
@@ -48,7 +42,6 @@ public class BankAccount {
     public void deposit(int amount, AccountModel account) throws IOException, NegativeAmountException {
         negativeAmountThrower(amount);
         depositSum(amount, account);
-        withdrawDepositPrinter("deposited");
     }
 
     //MODIFIES: this
@@ -59,12 +52,7 @@ public class BankAccount {
             throw new InsufficientFundsException();
         } else {
             withdrawSum(amount, account);
-            withdrawDepositPrinter("withdrawn");
         }
-    }
-
-    public void withdrawDepositPrinter(String type) {
-        System.out.println("Your money has been " + type + ".");
     }
 
     public void negativeAmountThrower(int amount) throws NegativeAmountException {
@@ -81,7 +69,6 @@ public class BankAccount {
         AccountModel account = getAccountModelFromString(s);
         accountList.add(s);
         return true;
-
     }
 
     public List<AccountModel> getAccountList(int userId) {
@@ -148,26 +135,8 @@ public class BankAccount {
         accountfile.writeFullListToFile(accountFileName, accountList);
     }
 
-    public boolean deleteAccount(int accountId, AccountModel account) throws IOException {
-        int index = 0;
-        for (String s : accountList) {
-            String[] accountArray = s.split(",");
-            if (accountArray.length >= 6) {
-                if (accountId == Integer.parseInt(accountArray[0])) {
-                    String updatedRow = accountArray[0] + "," + accountArray[1] + "," + accountArray[2]
-                            + "," + accountArray[3] + "," + accountArray[4] + ",true";
-                    updateAccount(accountId, updatedRow);
-                    account.delete = true;
-                    return true;
-                }
-            }
-            index++;
-        }
-        return false;
-    }
-
     public String getStringFormatAccount(AccountModel account) {
-        return account.accountId + "," + account.userId + "," + account.accountType
-                + "," + account.amount + "," + account.creationDate + "," + account.delete;
+        return account.getAccountId() + "," + account.getUserId() + "," + account.getAccountType()
+                + "," + account.getAmount() + "," + account.getCreationDate() + "," + account.getDelete();
     }
 }
