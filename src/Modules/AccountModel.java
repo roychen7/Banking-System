@@ -1,8 +1,12 @@
 package Modules;
 
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Objects;
 
-public class AccountModel {
+public class AccountModel implements Observer {
 
     private int accountId;
     private int userId;
@@ -10,6 +14,7 @@ public class AccountModel {
     private int amount;
     private String creationDate;
     private boolean delete;
+    private Subject subject;
 
     public AccountModel(int accountId, int userId, String accountType, int amount, String creationDate, boolean delete) {
         this.accountId = accountId;
@@ -72,5 +77,22 @@ public class AccountModel {
     }
     public void setDelete(boolean delete) {
         this.delete = delete;
+    }
+
+    @Override
+    public void update(Subject sub) throws IOException {
+        SingletonAccount.getInstance().accountModelList.remove(this);
+        SingletonAccount.getInstance().accountListInStrings.remove(getStringFormatAccount());
+        Files.write(Paths.get(System.getProperty("user.dir") + "/src/Data/Accounts"), SingletonAccount.getInstance().accountListInStrings, Charset.defaultCharset());
+    }
+
+    @Override
+    public void setSubject(Subject sub) {
+        this.subject = sub;
+    }
+
+    public String getStringFormatAccount() {
+        return accountId + "," + userId + "," + accountType
+                + "," + amount + "," + creationDate + "," + delete;
     }
 }

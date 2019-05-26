@@ -12,9 +12,8 @@ public class UserInfo {
     }
 
     public int findUserRow(String username, String password) throws IOException {
-        List<String> userList = accountfile.readFromFile(loginFileName);
         int index = 0;
-         for (String s : userList) {
+        for (String s : Singleton.getInstance().userListInStrings) {
             String[] myUser = s.split(",");
             if ((username.equals(myUser[1]) && password.equals(myUser[2]))) {
                 return index;
@@ -25,17 +24,15 @@ public class UserInfo {
     }
 
     public int findUserId(String username, String password) throws IOException {
-        List<String> userList = accountfile.readFromFile(loginFileName);
-        return Integer.parseInt(userList.get(findUserRow(username, password)).split(",")[0]);
+        if (checkUserExists(username, password)) {
+            return Integer.parseInt(Singleton.getInstance().userListInStrings.get(findUserRow(username, password)).split(",")[0]);
+        } else return -1;
     }
 
     public User findUser(int userId) throws IOException {
-        List<String> userList = accountfile.readFromFile(loginFileName);
-        for (String s : userList) {
-            String[] userArray = s.split(",");
-            if (userId == Integer.parseInt(userArray[0])) {
-                User user = new User(userId, userArray[1], userArray[2], userArray[3]);
-                return user;
+        for (User u: Singleton.getInstance().userList) {
+            if (u.getUserId()==userId) {
+                return u;
             }
         } return null;
     }
@@ -43,12 +40,4 @@ public class UserInfo {
     public boolean checkUserExists(String username, String password) throws IOException {
         return findUserRow(username, password) > -1;
     }
-
-    public void updatePhoneNumber(String phoneNumber, int userId) throws IOException {
-        User user = findUser(userId);
-        if (user!=null) {
-            user.setPhoneNumber(phoneNumber);
-        }
-    }
-
 }

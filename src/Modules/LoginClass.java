@@ -8,7 +8,7 @@ public class LoginClass {
     private AccountFile accountfile;
     private UserInfo ui;
 
-    public LoginClass() throws IOException {
+    public LoginClass() {
         loginFileName = System.getProperty("user.dir") + "/src/data/Login";
         accountfile = new AccountFile();
         ui = new UserInfo();

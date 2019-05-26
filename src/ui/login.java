@@ -28,8 +28,11 @@ public class login extends JFrame {
     private JPasswordField password;
     private JButton createAccount;
     private JTextField usernameField;
+    private JButton regularUserButton;
+    private JButton superUserButton;
     private JPasswordField passwordField;
-    RegularUserBase userReg = new RegularUserBase();
+    RegularUserBase userReg;
+    SuperUserBase userSup;
     private List<AccountModel> accountList;
     private List<AccountModel> trueAccountList;
     private List<JButton> buttonList;
@@ -45,7 +48,9 @@ public class login extends JFrame {
     private JTextField withdrawField;
     private JLabel depositLabel;
     private JTextField depositField;
-    private JButton loginButton;
+    private JButton deleteAnAccountButton;
+    private JTextField response;
+    private Singleton singleton;
     User user;
 
 
@@ -56,6 +61,12 @@ public class login extends JFrame {
         bAccount = new BankAccount();
         buttonList = new ArrayList<>();
         trueAccountList = new ArrayList<>();
+
+        userReg = new RegularUserBase();
+        userSup = new SuperUserBase();
+
+        initSingletonAccount();
+        initSingleton();
 
         JLabel usernameLabel = new JLabel("Username: ");
         username = new JTextField(30);
@@ -77,6 +88,13 @@ public class login extends JFrame {
         createAccount.addActionListener(handler);
     }
 
+    private void initSingleton() throws IOException {
+        userSup.initializeSingleton();
+    }
+    private void initSingletonAccount() throws IOException {
+        bAccount.initializeSingletonAccount();
+    }
+
     private class Handler implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
@@ -92,55 +110,11 @@ public class login extends JFrame {
                         playSound("swoosh.wav");
                         JOptionPane.showMessageDialog(null, "Login Successful.");
                         buttonList = new ArrayList<>();
-                        accountList = bAccount.getAccountList(user.getUserId());
-                        for (AccountModel acc : accountList) {
-                            if (!(acc==null)) {
-                                if (!(trueAccountList==null)) {
-                                    if (!(trueAccountList.contains(acc))) {
-                                        trueAccountList.add(acc);
-                                    }
-                                }
-                            }
-                        }
-                        for (AccountModel acc : trueAccountList) {
-                            if (!(acc==null)) {
-                                JButton button = new JButton(String.valueOf(acc.getAccountId()));
-                                ArrayList<String> stringButtonList = new ArrayList<>();
-                                if (!(buttonList==null)) {
-                                    for (JButton buttons : buttonList) {
-                                        stringButtonList.add(buttons.getActionCommand());
-                                    }
-                                }
-                                String s = button.getActionCommand();
-                                if (!(stringButtonList.contains(s))) {
-                                    buttonList.add(button);
-                                }
-                                List<AccountModel> listAccounts = new ArrayList<>();
-                                for (JButton Button : buttonList) {
-                                    try {
-                                        listAccounts.add(bAccount.findAccount(Integer.parseInt(Button.getActionCommand())));
-                                    } catch (noAccountsFoundException e1) {
-                                        e1.printStackTrace();
-                                    }
-                                }
-                                List<AccountModel> listAccountsNotSameUserId = new ArrayList<>();
-                                for (AccountModel account : listAccounts) {
-                                    if (!(account.getUserId()==user.getUserId())) {
-                                        listAccountsNotSameUserId.add(account);
-                                    }
-                                }
-                                List<Integer> accountIdList = new ArrayList<>();
-                                for (AccountModel account1 : listAccountsNotSameUserId) {
-                                    accountIdList.add(account1.getAccountId());
-                                }
-                                Iterator<JButton> iterator = buttonList.iterator();
-                                while (iterator.hasNext()) {
-                                    JButton but = iterator.next();
-                                    if (accountIdList.contains(Integer.parseInt(but.getActionCommand()))) {
-                                        iterator.remove();
-                                    }
-                                }
-                            }
+
+                        List<AccountModel> accsWithMatchingUserId = bAccount.filterAccListByUserId(user.getUserId());
+                        for (AccountModel am : accsWithMatchingUserId) {
+                            JButton button = new JButton(Integer.toString(am.getAccountId()));
+                            buttonList.add(button);
                         }
                         createAccountSelectionFrame();
                     } else {
@@ -159,7 +133,7 @@ public class login extends JFrame {
             }
         }
 
-        public void createAccountSelectionFrame() {
+        private void createAccountSelectionFrame() {
             JPanel myPanel = new JPanel();
             JFrame myFrame = new JFrame("Account Selection");
             myFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -178,6 +152,12 @@ public class login extends JFrame {
                     }
                 }
             }
+            if (user.getType().equals("Super")) {
+                deleteAnAccountButton = new JButton("Delete an Account");
+                myPanel.add(deleteAnAccountButton);
+                deleteAnAccountButton.addActionListener(handler);
+            }
+
             myFrame.add(myPanel);
             myFrame.setVisible(true);
         }
@@ -188,12 +168,53 @@ public class login extends JFrame {
                 if (e.getSource()==createAccountbutton) {
                     playSound("leaguebuttonclick.wav");
                     createAccountOptionFrame();
-                } else {
+                } else if (e.getSource() == deleteAnAccountButton) {
+                    deleteAnAccountFrame();
+                    return;
+                }
+                else {
                     playSound("leaguebuttonclick.wav");
                     createAccountFrame(e);
                 }
             }
         }
+
+        private void deleteAnAccountFrame() {
+            JFrame myFrame = new JFrame("Deleting Accounts");
+            JPanel myPanel = new JPanel();
+            myFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            myFrame.setSize(600, 300);
+            myFrame.setLocationRelativeTo(null);
+            JLabel instructions = new JLabel("Type in a regular account's username to delete");
+            myPanel.add(instructions);
+            response = new JTextField(30);
+            myPanel.add(response);
+            myFrame.setVisible(true);
+            myFrame.add(myPanel);
+
+            Handler7 handler = new Handler7();
+            response.addActionListener(handler);
+        }
+
+        private class Handler7 implements ActionListener {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() == response) {
+                    try {
+                        if (userSup.deleteUser(response.getText())) {
+                            JOptionPane.showMessageDialog(null, "User Deletion was Successful");
+                        } else {
+                            JOptionPane.showMessageDialog(null, "User not found");
+                        }
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+        }
+
+
 
         private void createAccountFrame(ActionEvent e) {
             int i = Integer.parseInt(e.getActionCommand());
@@ -238,7 +259,7 @@ public class login extends JFrame {
             }
         }
 
-        public void createWithdrawWindow() {
+        private void createWithdrawWindow() {
             JFrame frame = new JFrame();
             JPanel panel = new JPanel();
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -275,7 +296,7 @@ public class login extends JFrame {
                 }
             }
         }
-        public void createDepositWindow() {
+        private void createDepositWindow() {
             JFrame frame = new JFrame();
             JPanel panel = new JPanel();
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -311,7 +332,7 @@ public class login extends JFrame {
             }
         }
 
-        public void createAccountOptionFrame() {
+        private void createAccountOptionFrame() {
             JFrame myFrame = new JFrame("Account type selection");
             myFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             myFrame.setSize(400,400);
@@ -324,7 +345,7 @@ public class login extends JFrame {
             myPanel.add(accountTypeLabel);
             myPanel.add(savings);
             myPanel.add(chequing);
-            Handler2 handler = new Handler2();
+            Handler2 handler = new Handler2(myFrame);
             savings.addActionListener(handler);
             chequing.addActionListener(handler);
             myFrame.add(myPanel);
@@ -332,13 +353,20 @@ public class login extends JFrame {
 
         private class Handler2 implements ActionListener {
 
+            JFrame myFrame;
+
+            public Handler2(JFrame myFrame) {
+                this.myFrame = myFrame;
+            }
+
             public void actionPerformed(ActionEvent e) {
                 if (e.getSource()==savings) {
                     try {
                         playSound("leaguebuttonclick.wav");
-                        bAccount.createAccount(user.getUserId(),"Savings");
+                        bAccount.createAccount(user.getUserId(),"Savings", user);
                         JOptionPane.showMessageDialog(null, "Account creation" +
                                 " successful. Please re-login to see your account.");
+                        myFrame.dispose();
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     } catch (noAccountsFoundException e1) {
@@ -348,9 +376,10 @@ public class login extends JFrame {
                 if (e.getSource()==chequing) {
                     try {
                         playSound("leaguebuttonclick.wav");
-                        bAccount.createAccount(user.getUserId(),"Chequing");
+                        bAccount.createAccount(user.getUserId(),"Chequing", user);
                         JOptionPane.showMessageDialog(null, "Account creation" +
                                 " successful. Please re-login to see your account.");
+                        myFrame.dispose();
                     } catch (IOException e1) {
                         e1.printStackTrace();
                     } catch (noAccountsFoundException e1) {
@@ -360,7 +389,7 @@ public class login extends JFrame {
             }
         }
 
-        public void createAccountCreationFrame() {
+        private void createAccountCreationFrame() {
             JFrame myFrame = new JFrame("Account Creation");
             JPanel myPanel = new JPanel();
             myFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -377,24 +406,27 @@ public class login extends JFrame {
             myFrame.setVisible(true);
             myFrame.add(myPanel);
 
-            MyHandler myHandler = new MyHandler();
+            MyHandler myHandler = new MyHandler(myFrame);
             usernameField.addActionListener(myHandler);
             passwordField.addActionListener(myHandler);
         }
     }
 
     private class MyHandler implements ActionListener {
+        JFrame myFrame;
+
+        public MyHandler(JFrame myFrame) {
+            this.myFrame = myFrame;
+        }
 
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == passwordField) {
-                String user = usernameField.getText();
                 try {
-                    if (userReg.createUser(user, e.getActionCommand())) {
-                        playSound("swoosh.wav");
-                        JOptionPane.showMessageDialog(null, "Your account has been created.");
-                    } else {
-                        playSound("errorsound.wav");
+                    if (userSup.containsUserAndPass(usernameField.getText(), passwordField.getText())) {
                         JOptionPane.showMessageDialog(null, "Account already exists.");
+                    } else {
+                        chooseSuperOrRegular(usernameField.getText(), passwordField.getText());
+                        myFrame.dispose();
                     }
                 } catch (IOException e1) {
                     e1.printStackTrace();
@@ -403,7 +435,63 @@ public class login extends JFrame {
         }
     }
 
-    public void playSound(String soundName) {
+    private void chooseSuperOrRegular(String username, String password) {
+        JFrame myFrame = new JFrame("Choosing Account Type");
+        JPanel myPanel = new JPanel();
+        myFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        myFrame.setSize(600, 300);
+        myFrame.setLocationRelativeTo(null);
+        regularUserButton = new JButton("Regular User");
+        myPanel.add(regularUserButton);
+        superUserButton = new JButton("Super User");
+        myPanel.add(superUserButton);
+        myFrame.setVisible(true);
+        myFrame.add(myPanel);
+
+        Handler6 handler = new Handler6(username, password, myFrame);
+        regularUserButton.addActionListener(handler);
+        superUserButton.addActionListener(handler);
+    }
+
+    private class Handler6 implements ActionListener {
+        private String username;
+        private String password;
+        private JFrame myFrame;
+
+        public Handler6(String username, String password, JFrame myFrame) {
+            this.username = username;
+            this.password = password;
+            this.myFrame = myFrame;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == regularUserButton) {
+                try {
+                    if (userReg.createUser(username, password)) {
+                        JOptionPane.showMessageDialog(null, "Account creation Successful");
+                        myFrame.dispose();
+                    }
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            } else if (e.getSource() == superUserButton) {
+                try {
+                    if (userSup.createUser(username, password)) {
+                        JOptionPane.showMessageDialog(null, "Account creation Successful. " +
+                                "You now have Super User priviliges!");
+                        myFrame.dispose();
+                    }
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        }
+    }
+
+
+
+    private void playSound(String soundName) {
         try {
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new File(soundName).getAbsoluteFile());
             Clip clip = AudioSystem.getClip();

@@ -1,5 +1,6 @@
 package Test;
 
+
 import Exceptions.InsufficientFundsException;
 import Exceptions.NegativeAmountException;
 import Exceptions.noAccountsFoundException;
@@ -32,7 +33,7 @@ public class TestBankAccount {
         user = new User(1, "a", "b", "Regular");
         Date d = new Date();
         reg.createUser("a", "b");
-        ba.createAccount(user.getUserId(), "Chequing");
+        ba.createAccount(user.getUserId(), "Chequing", user);
         acc = new AccountModel(1,1, "Chequing",0,d.toString(),false);
     }
 
@@ -108,7 +109,7 @@ public class TestBankAccount {
         assertEquals(a, comp);
         String[] temp = comp.split(",");
         AccountModel acc1 = new AccountModel();
-        assertTrue(acc.equals(ba.createAccountFromstringArray(temp,acc1)));
+        assertTrue(acc.equals(ba.createAccountFromstringArray(temp)));
         PrintWriter pw = new PrintWriter(s);
         pw.close();
         PrintWriter pw1 = new PrintWriter(d);
