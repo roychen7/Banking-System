@@ -21,7 +21,6 @@ import java.util.List;
 
 public class login extends JFrame {
 
-    LoginClass loginInstance = new LoginClass();
     JPanel myPanel = new JPanel();
     private BankAccount bAccount;
     private JTextField username;
@@ -50,7 +49,6 @@ public class login extends JFrame {
     private JTextField depositField;
     private JButton deleteAnAccountButton;
     private JTextField response;
-    private Singleton singleton;
     User user;
 
 
@@ -104,8 +102,11 @@ public class login extends JFrame {
             } else if (e.getSource() == password) {
                 string = e.getActionCommand();
                 String Username = username.getText();
-                try {
-                    user = loginInstance.login(Username, string);
+                    for (User u : Singleton.getInstance().userList) {
+                        if (u.getUsername().equals(Username) && u.getPassword().equals(string)) {
+                            user = u;
+                        }
+                    }
                     if (user != null) {
                         playSound("swoosh.wav");
                         JOptionPane.showMessageDialog(null, "Login Successful.");
@@ -123,10 +124,6 @@ public class login extends JFrame {
                         username.setText("");
                         password.setText("");
                     }
-
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
             } else if (e.getSource() == createAccount) {
                 playSound("leaguebuttonclick.wav");
                 createAccountCreationFrame();

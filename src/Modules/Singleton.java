@@ -7,12 +7,11 @@ public class Singleton {
     private static Singleton instance;
     public List<User> userList;
     public List<String> userListInStrings;
-    AccountFile af;
 
+    // Singleton constructor initializes its lists to being empty
     private Singleton() {
         userList = new ArrayList<>();
         userListInStrings = new ArrayList<>();
-        af = new AccountFile();
     }
 
     public static Singleton getInstance() {

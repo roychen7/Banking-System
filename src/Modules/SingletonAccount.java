@@ -9,6 +9,7 @@ public class SingletonAccount {
     public List<AccountModel> accountModelList;
     public List<String> accountListInStrings;
 
+    // SingletonAccount constructor initializes its lists to being empty
     private SingletonAccount() {
         accountListInStrings = new ArrayList<>();
         accountModelList = new ArrayList<>();

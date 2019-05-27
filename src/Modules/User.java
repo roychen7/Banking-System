@@ -3,6 +3,7 @@ package Modules;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class User implements Subject {
     private int userId;
@@ -29,12 +30,29 @@ public class User implements Subject {
         this.observers = observers;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User that = (User) o;
+        return userId == that.getUserId();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(userId);
+    }
+
     public int getUserId() {
         return this.userId;
     }
 
     public String getUsername() {
         return username;
+    }
+
+    public String getPassword() {
+        return password;
     }
 
     public String getType() {
@@ -47,6 +65,10 @@ public class User implements Subject {
 
     public int getOffSet() {
         return offSet;
+    }
+
+    public List<Observer> getObservers() {
+        return observers;
     }
 
     @Override

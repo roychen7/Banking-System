@@ -12,35 +12,12 @@ public class BankAccount {
     private AccountFile accountfile;
     private String accountFileName;
     Date date;
-    private CommonBase commonbase;
+    private ClassToGetNewId NewIdCalculatorObj;
 
     public BankAccount() throws IOException {
         accountfile = new AccountFile();
         accountFileName = System.getProperty("user.dir") + "/src/Data/Accounts";
-        commonbase = new CommonBase();
-    }
-
-    public AccountModel findById(int accountId) {
-        for (AccountModel am : SingletonAccount.getInstance().accountModelList) {
-            if (am.getAccountId() == accountId) {
-                return am;
-            }
-        }
-        return null;
-    }
-
-    public String findByIdString(int accountId) {
-        for (String s : SingletonAccount.getInstance().accountListInStrings) {
-            String[] temp = s.split(",");
-            if (Integer.parseInt(temp[0]) == accountId) {
-                return s;
-            }
-        }
-        return "";
-    }
-
-    public void updateFile() throws IOException {
-        accountfile.writeFullListToFile(accountFileName,SingletonAccount.getInstance().accountListInStrings);
+        NewIdCalculatorObj = new ClassToGetNewId();
     }
 
     //EFFECTS: returns account amount
@@ -80,6 +57,7 @@ public class BankAccount {
         }
     }
 
+    // throws negative amount exception if amount is < 0
     public void negativeAmountThrower(int amount) throws NegativeAmountException {
         if (amount < 0) {
             throw new NegativeAmountException();
@@ -87,8 +65,10 @@ public class BankAccount {
     }
 
 
+    // creates an account, updating it in the Accounts text file, as well as singleton's account lists, and also
+    // registering it as an observer of the input user, and setting its subject to the user for Observer design pattern
     public boolean createAccount (int userId, String accountType, User user) throws IOException, noAccountsFoundException {
-        int accountID = commonbase.getNewId(SingletonAccount.getInstance().accountListInStrings);
+        int accountID = NewIdCalculatorObj.getNewId(SingletonAccount.getInstance().accountListInStrings);
         date = new Date();
         String s = accountID + "," + userId + "," + accountType + ",0," + date.toString() + ",false";
         accountfile.writeToFile(accountFileName, s);
@@ -100,19 +80,7 @@ public class BankAccount {
         return true;
     }
 
-    public List<AccountModel> getAccountList(int userId) {
-        List<AccountModel> accountsWithSameUserId = new ArrayList();
-        for (String s : SingletonAccount.getInstance().accountListInStrings) {
-            String[] accountArray = s.split(",");
-            if (accountArray.length >= 2) {
-                if (Integer.parseInt(accountArray[1]) == userId) {
-                    accountsWithSameUserId.add(getAccountModelFromString(s));
-                }
-            }
-        }
-        return accountsWithSameUserId;
-    }
-
+    // returns list of accounts in SingletonAccount's lists that correspond to given userId
     public List<AccountModel> filterAccListByUserId(int userId) {
         List<AccountModel> ret = new ArrayList<>();
         for (int i = 0; i < SingletonAccount.getInstance().accountModelList.size(); i++) {
@@ -123,11 +91,7 @@ public class BankAccount {
         return ret;
     }
 
-    public AccountModel getAccountModelFromString(String accountString) {
-        String[] list = accountString.split(",");
-        return createAccountModel(list);
-    }
-
+    // creates account from given string array, assumes list is a correct string[] to represent a bank account
     public AccountModel createAccountModel(String[] list) {
         AccountModel account = new AccountModel(Integer.parseInt(list[0]),
                 Integer.parseInt(list[1]),
@@ -138,27 +102,17 @@ public class BankAccount {
         return account;
     }
 
-
+    // returns account corresponding to accountId, throws noAccountsFoundException if account was not found
     public AccountModel findAccount(int accountId) throws noAccountsFoundException {
-        for (String s : SingletonAccount.getInstance().accountListInStrings) {
-            String[] accountArray = s.split(",");
-            if (accountArray.length >= 1) {
-                if (Integer.parseInt(accountArray[0]) == accountId) {
-                    return createAccountFromstringArray(accountArray);
-                }
+        for (AccountModel s : SingletonAccount.getInstance().accountModelList) {
+            if (s.getAccountId() == accountId) {
+                return s;
             }
         }
         throw new noAccountsFoundException();
     }
 
-    public AccountModel createAccountFromstringArray(String[] accountArray) {
-        AccountModel newAccount = new AccountModel(Integer.parseInt(accountArray[0]),
-                Integer.parseInt(accountArray[1]), accountArray[2]
-                , Integer.parseInt(accountArray[3]), accountArray[4],
-                Boolean.parseBoolean(accountArray[5]));
-        return newAccount;
-    }
-
+    // replaces line in Accounts at wherever the account with accountId is located with updatedRow
     public void updateAccount(int accountId, String updatedRow) throws IOException {
         int index = 0;
         for (String s : SingletonAccount.getInstance().accountListInStrings) {
@@ -173,17 +127,19 @@ public class BankAccount {
         accountfile.writeFullListToFile(accountFileName, SingletonAccount.getInstance().accountListInStrings);
     }
 
+    // returns string form used to store an account in Accounts
     public String getStringFormatAccount(AccountModel account) {
         return account.getAccountId() + "," + account.getUserId() + "," + account.getAccountType()
                 + "," + account.getAmount() + "," + account.getCreationDate() + "," + account.getDelete();
     }
 
+    // initializes singleton account's lists
     public void initializeSingletonAccount() throws IOException {
         SingletonAccount sa = SingletonAccount.getInstance();
         sa.accountListInStrings = accountfile.readFromFile(accountFileName);
         for (String s : sa.accountListInStrings) {
             String[] arr = s.split(",");
-            sa.accountModelList.add(createAccountFromstringArray(arr));
+            sa.accountModelList.add(createAccountModel(arr));
         }
     }
 }

@@ -1,24 +1,23 @@
 package Modules;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public abstract class UserBase {
 
-    private CommonBase commonbase;
+    private ClassToGetNewId NewIdCalculatorObj;
     protected String userFileName;
     protected AccountFile accountfile;
 
     public UserBase() {
         accountfile = new AccountFile();
         userFileName = System.getProperty("user.dir") + "/src/data/Login";
-        commonbase = new CommonBase();
+        NewIdCalculatorObj = new ClassToGetNewId();
     }
 
     abstract public boolean createUser(String username, String password) throws IOException;
 
 
+    // returns true if user exists, false if user does not exist
     public boolean checkUserExists(String username, String password) throws IOException {
         if (Singleton.getInstance().userListInStrings != null) {
             for (String s : Singleton.getInstance().userListInStrings) {
@@ -33,21 +32,35 @@ public abstract class UserBase {
         return false;
     }
 
+    // finds the user with username and password, returns null otherwise
+    public User findUser(String username, String password) {
+        for (User u : Singleton.getInstance().userList) {
+            if (u.getUsername().equals(username) && u.getPassword().equals(password)) {
+                return u;
+            }
+        }
+        return null;
+    }
+
+    // creates user from given string array, assumes that userArray is passed in as a correct string array
+    // to create a user
     public User createUserFromStringArray(String[] userArray) {
         return new User(Integer.parseInt(userArray[0]), userArray[1], userArray[2], userArray[3]);
     }
 
+    // creates new user, updating singleton's lists and writing to file 
     public void makeNewUser(String username, String password, String usertype) throws IOException {
         Singleton s = Singleton.getInstance();
-        Integer newUserId = commonbase.getNewId(s.userListInStrings);
-        String User = newUserId + "," + username + "," + password + "," + usertype + "," + " ";
+        Integer newUserId = NewIdCalculatorObj.getNewId(s.userListInStrings);
+        String User = newUserId + "," + username + "," + password + "," + usertype + ",";
         accountfile.writeToFile(userFileName, User);
         s.userListInStrings.add(User);
         User newUser = new User(newUserId, username, password, usertype);
         s.userList.add(newUser);
     }
 
-    public boolean ifUserExistsThenCreate(String user, String pass, String type) throws IOException {
+    // returns true if user creation is successful, false if user already exists
+    public boolean ifUserDoesntExistsThenCreate(String user, String pass, String type) throws IOException {
         if (checkUserExists(user, pass)) {
             return false;
         } else {
@@ -56,6 +69,7 @@ public abstract class UserBase {
         }
     }
 
+    // initiates the singleton to create its list of users from the user file
     public void initializeSingleton() throws IOException {
         Singleton sing = Singleton.getInstance();
         sing.userListInStrings = accountfile.readFromFile(userFileName);
@@ -68,6 +82,7 @@ public abstract class UserBase {
         }
     }
 
+    // initiaites users in the singleton's list of users to have their list of observers
     public void initUsers() {
         /*
         initUserOffsets();
@@ -82,6 +97,11 @@ public abstract class UserBase {
         }
     }
 
+    public String userToString(User u) {
+        return Integer.toString(u.getUserId()) + "," + u.getUsername() + "," + u.getPassword() + "," +
+                u.getType() + ",";
+    }
+
     //code to calculate byte offset in text files used for RandomAccessFile rw operations, eventually decided
     //to not use this method
     /*
@@ -92,7 +112,7 @@ public abstract class UserBase {
             return;
         }
         for (int i = 1; i < s.userListInStrings.size(); i++) {
-            int j = 2 + s.userList.get(i-1).getOffSet()+s.userListInStrings.get(i-1).length();
+            int j = 1 + s.userList.get(i-1).getOffSet()+s.userListInStrings.get(i-1).length();
             s.userList.get(i).setOffSet(j);
         }
 

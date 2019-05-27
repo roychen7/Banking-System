@@ -4,10 +4,7 @@ package Test;
 import Exceptions.InsufficientFundsException;
 import Exceptions.NegativeAmountException;
 import Exceptions.noAccountsFoundException;
-import Modules.AccountModel;
-import Modules.BankAccount;
-import Modules.RegularUserBase;
-import Modules.User;
+import Modules.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -30,11 +27,13 @@ public class TestBankAccount {
     public void runBefore() throws IOException, noAccountsFoundException {
         ba = new BankAccount();
         reg = new RegularUserBase();
-        user = new User(1, "a", "b", "Regular");
-        Date d = new Date();
         reg.createUser("a", "b");
+        user = reg.findUser("a", "b");
         ba.createAccount(user.getUserId(), "Chequing", user);
-        acc = new AccountModel(1,1, "Chequing",0,d.toString(),false);
+        ba.createAccount(user.getUserId(), "Savings", user);
+        acc = ba.findAccount(1);
+        SingletonAccount initAcc = SingletonAccount.getInstance();
+        Singleton initUser = Singleton.getInstance();
     }
 
     @Test
@@ -54,6 +53,10 @@ public class TestBankAccount {
         pw.close();
         PrintWriter pw1 = new PrintWriter(d);
         pw1.close();
+        SingletonAccount.getInstance().accountModelList = new ArrayList<>();
+        SingletonAccount.getInstance().accountListInStrings = new ArrayList<>();
+        Singleton.getInstance().userList = new ArrayList<>();
+        Singleton.getInstance().userListInStrings = new ArrayList<>();
     }
 
     @Test
@@ -80,6 +83,10 @@ public class TestBankAccount {
         pw.close();
         PrintWriter pw1 = new PrintWriter(d);
         pw1.close();
+        SingletonAccount.getInstance().accountModelList = new ArrayList<>();
+        SingletonAccount.getInstance().accountListInStrings = new ArrayList<>();
+        Singleton.getInstance().userList = new ArrayList<>();
+        Singleton.getInstance().userListInStrings = new ArrayList<>();
     }
 
     @Test
@@ -99,6 +106,10 @@ public class TestBankAccount {
         pw.close();
         PrintWriter pw1 = new PrintWriter(d);
         pw1.close();
+        SingletonAccount.getInstance().accountModelList = new ArrayList<>();
+        SingletonAccount.getInstance().accountListInStrings = new ArrayList<>();
+        Singleton.getInstance().userList = new ArrayList<>();
+        Singleton.getInstance().userListInStrings = new ArrayList<>();
     }
 
     @Test
@@ -108,11 +119,84 @@ public class TestBankAccount {
                 + "," + acc.getAmount() + "," + acc.getCreationDate() + "," + acc.getDelete();
         assertEquals(a, comp);
         String[] temp = comp.split(",");
-        AccountModel acc1 = new AccountModel();
-        assertTrue(acc.equals(ba.createAccountFromstringArray(temp)));
+        assertTrue(acc.equals(ba.createAccountModel(temp)));
         PrintWriter pw = new PrintWriter(s);
         pw.close();
         PrintWriter pw1 = new PrintWriter(d);
         pw1.close();
+        SingletonAccount.getInstance().accountModelList = new ArrayList<>();
+        SingletonAccount.getInstance().accountListInStrings = new ArrayList<>();
+        Singleton.getInstance().userList = new ArrayList<>();
+        Singleton.getInstance().userListInStrings = new ArrayList<>();
+    }
+
+    @Test
+    void testcreateAccount() throws IOException, noAccountsFoundException {
+        ba.createAccount(user.getUserId(), "Savings", user);
+        AccountModel acc1 = ba.findAccount(3);
+        List<AccountModel> testList = ba.filterAccListByUserId(user.getUserId());
+        assertTrue(testList.size() == 3 && testList.get(2).equals(acc1));
+        PrintWriter pw = new PrintWriter(s);
+        pw.close();
+        PrintWriter pw1 = new PrintWriter(d);
+        pw1.close();
+        SingletonAccount.getInstance().accountModelList = new ArrayList<>();
+        SingletonAccount.getInstance().accountListInStrings = new ArrayList<>();
+        Singleton.getInstance().userList = new ArrayList<>();
+        Singleton.getInstance().userListInStrings = new ArrayList<>();
+    }
+
+    @Test
+    void testFilterAccounts() throws IOException, noAccountsFoundException {
+        List<AccountModel> tempList = ba.filterAccListByUserId(user.getUserId());
+        AccountModel tempAcc1 = ba.findAccount(1);
+        AccountModel tempAcc2 = ba.findAccount(2);
+        assertTrue(tempList.size() == 2 && tempList.get(0).equals(tempAcc1) &&
+                tempList.get(1).equals(tempAcc2));
+
+        reg.createUser("test1", "test2");
+        User temp = reg.findUser("test1", "test2");
+        ba.createAccount(temp.getUserId(),"Savings", temp);
+        tempList = ba.filterAccListByUserId(temp.getUserId());
+        AccountModel tempAcc3 = ba.findAccount(3);
+        assertTrue(tempList.size() == 1 && tempList.get(0).equals(tempAcc3));
+        PrintWriter pw = new PrintWriter(s);
+        pw.close();
+        PrintWriter pw1 = new PrintWriter(d);
+        pw1.close();
+        SingletonAccount.getInstance().accountModelList = new ArrayList<>();
+        SingletonAccount.getInstance().accountListInStrings = new ArrayList<>();
+        Singleton.getInstance().userList = new ArrayList<>();
+        Singleton.getInstance().userListInStrings = new ArrayList<>();
+    }
+
+    @Test
+    void testUpdateAccount() throws IOException {
+        AccountFile af = new AccountFile();
+        ba.updateAccount(2, "asdf");
+        List<String> tempList = af.readFromFile(d);
+        assertTrue(tempList.get(1).equals("asdf"));
+        PrintWriter pw = new PrintWriter(s);
+        pw.close();
+        PrintWriter pw1 = new PrintWriter(d);
+        pw1.close();
+    }
+
+    @Test
+    void testSingletonAccountInit() throws noAccountsFoundException, FileNotFoundException {
+        AccountModel tempAcc1 = ba.findAccount(1);
+        AccountModel tempAcc2 = ba.findAccount(2);
+
+        assertTrue(SingletonAccount.getInstance().accountModelList.size() == 2 &&
+        SingletonAccount.getInstance().accountModelList.get(0).equals(tempAcc1) &&
+        SingletonAccount.getInstance().accountModelList.get(1).equals(tempAcc2));
+        PrintWriter pw = new PrintWriter(s);
+        pw.close();
+        PrintWriter pw1 = new PrintWriter(d);
+        pw1.close();
+        SingletonAccount.getInstance().accountModelList = new ArrayList<>();
+        SingletonAccount.getInstance().accountListInStrings = new ArrayList<>();
+        Singleton.getInstance().userList = new ArrayList<>();
+        Singleton.getInstance().userListInStrings = new ArrayList<>();
     }
 }

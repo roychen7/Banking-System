@@ -8,7 +8,8 @@ public class RegularUserBase extends UserBase {
         super();
     }
 
+    // returns true if "Regular" user was created, false otherwise
     public boolean createUser(String username, String password) throws IOException {
-        return ifUserExistsThenCreate(username, password, "Regular");
+        return ifUserDoesntExistsThenCreate(username, password, "Regular");
     }
 }

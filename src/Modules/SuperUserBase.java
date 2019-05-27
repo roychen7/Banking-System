@@ -1,9 +1,6 @@
 package Modules;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.List;
 
 public class SuperUserBase extends UserBase {
 
@@ -11,21 +8,16 @@ public class SuperUserBase extends UserBase {
         super();
     }
 
+    // returns true if "Super" user was created, false if user already exists
     @Override
     public boolean createUser(String username, String password) throws IOException {
-        return ifUserExistsThenCreate(username, password, "Super");
+        return ifUserDoesntExistsThenCreate(username, password, "Super");
 
     }
 
+    // returns true if user was deleted, false if user was not found. Rewrites the user text file once deleted
+    // to account for the deleted user, an O(n) runtime operation
     public boolean deleteUser(String username) throws IOException {
-        return deleteThisUser(username);
-    }
-
-    public boolean deleteThisUser(String username) throws IOException {
-        return ifUserExistsThenDelete(username);
-    }
-
-    public boolean ifUserExistsThenDelete(String username) throws IOException {
         Singleton s = Singleton.getInstance();
         if (s.userList.isEmpty()) {
             return false;
@@ -48,6 +40,7 @@ public class SuperUserBase extends UserBase {
         return flag;
     }
 
+    // returns true if singleton's list of users contains the specified username and password as a combination
     public boolean containsUserAndPass(String username, String password) throws IOException {
         if (Singleton.getInstance().userListInStrings.isEmpty()) {
             return false;

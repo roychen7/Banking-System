@@ -1,4 +1,4 @@
 package Exceptions;
 
-public class InsufficientFundsException extends Exception {
+public class InsufficientFundsException extends InvalidAmount {
 }
