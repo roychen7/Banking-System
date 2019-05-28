@@ -14,7 +14,7 @@ public class Singleton {
         userListInStrings = new ArrayList<>();
     }
 
-    public static Singleton getInstance() {
+    public static synchronized Singleton getInstance() {
         if (instance == null) {
             instance = new Singleton();
         }
