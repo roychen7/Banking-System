@@ -182,7 +182,7 @@ public class login extends JFrame {
             myFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
             myFrame.setSize(600, 300);
             myFrame.setLocationRelativeTo(null);
-            JLabel instructions = new JLabel("Type in a regular account's username to delete");
+            JLabel instructions = new JLabel("Type in a regular account's ID to delete");
             myPanel.add(instructions);
             response = new JTextField(30);
             myPanel.add(response);
