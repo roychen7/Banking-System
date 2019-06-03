@@ -17,7 +17,7 @@ public class SuperUserBase extends UserBase {
 
     // returns true if user was deleted, false if user was not found. Rewrites the user text file once deleted
     // to account for the deleted user, an O(n) runtime operation
-    public boolean deleteUser(String username) throws IOException {
+    public boolean deleteUser(int id) throws IOException {
         Singleton s = Singleton.getInstance();
         if (s.userList.isEmpty()) {
             return false;
@@ -25,7 +25,7 @@ public class SuperUserBase extends UserBase {
         boolean flag = false;
         int tempIndex = -1;
         for (int i = 0; i < s.userList.size(); i++) {
-            if (s.userList.get(i).getUsername().equals(username)) {
+            if (s.userList.get(i).getId() == id) {
                 flag = true;
                 tempIndex = i;
             }
